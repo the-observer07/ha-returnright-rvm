@@ -38,9 +38,7 @@ def _setup(hass, fake_client, make_entry, specs, options=None):
     entry = make_entry([_spec(i, o) for i, o in specs], options)
     entry.add_to_hass(hass)
     for i, o in specs:
-        fake_client.nearby_results.setdefault(o, []).append(
-            make_machine(i, o[0], o[1])
-        )
+        fake_client.nearby_results.setdefault(o, []).append(make_machine(i, o[0], o[1]))
         fake_client.bin_results[i] = [make_compartment()]
     return RvmCoordinator(hass, entry, fake_client)
 
@@ -53,18 +51,14 @@ async def test_success_returns_data_keyed_by_id(hass, fake_client, make_entry):
     assert data[1].compartments == (make_compartment(),)
 
 
-async def test_tokens_fetched_once_per_cycle_for_many_machines(
-    hass, fake_client, make_entry
-):
+async def test_tokens_fetched_once_per_cycle_for_many_machines(hass, fake_client, make_entry):
     coord = _setup(hass, fake_client, make_entry, [(1, A), (2, A), (3, B)])
     await coord._async_update_data()
     assert fake_client.tokens_calls == 1
     assert len(fake_client.bin_calls) == 3
 
 
-async def test_machines_sharing_an_origin_share_one_nearby_call(
-    hass, fake_client, make_entry
-):
+async def test_machines_sharing_an_origin_share_one_nearby_call(hass, fake_client, make_entry):
     coord = _setup(hass, fake_client, make_entry, [(1, A), (2, A)])
     await coord._async_update_data()
     assert fake_client.nearby_calls == [(*A, 1500)]
@@ -76,9 +70,7 @@ async def test_distinct_origins_each_get_a_nearby_call(hass, fake_client, make_e
     assert sorted(fake_client.nearby_calls) == [(*A, 1500), (*B, 1500)]
 
 
-async def test_one_bin_status_failure_drops_only_that_machine(
-    hass, fake_client, make_entry
-):
+async def test_one_bin_status_failure_drops_only_that_machine(hass, fake_client, make_entry):
     coord = _setup(hass, fake_client, make_entry, [(1, A), (2, A)])
     fake_client.bin_results[2] = RvmConnectionError("boom")
     data = await coord._async_update_data()
@@ -156,9 +148,7 @@ async def test_success_after_blocked_deletes_issue_and_resets_counter(
 
 
 async def test_scan_interval_comes_from_options(hass, fake_client, make_entry):
-    coord = _setup(
-        hass, fake_client, make_entry, [(1, A)], {CONF_SCAN_INTERVAL: 15}
-    )
+    coord = _setup(hass, fake_client, make_entry, [(1, A)], {CONF_SCAN_INTERVAL: 15})
     assert coord.update_interval == timedelta(minutes=15)
 
 

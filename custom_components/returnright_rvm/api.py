@@ -105,9 +105,7 @@ class RvmClient:
             raise RvmConnectionError("unexpected response") from err
         return Tokens(uuid=uuid, token=token)
 
-    async def nearby(
-        self, tokens: Tokens, lat: float, lng: float, radius_m: int
-    ) -> list[Machine]:
+    async def nearby(self, tokens: Tokens, lat: float, lng: float, radius_m: int) -> list[Machine]:
         """List machines near a point, skipping unparseable records."""
         data = await self._get_data(
             f"/{tokens.uuid}/locations/nearby?lat={lat}&lng={lng}&radius={radius_m}",
@@ -123,9 +121,7 @@ class RvmClient:
 
     async def bin_status(self, tokens: Tokens, rvm_id: int) -> list[Compartment]:
         """Fetch compartment fill levels for one machine."""
-        data = await self._get_data(
-            f"/{tokens.uuid}/locations/rvms/{rvm_id}/bin-status", tokens
-        )
+        data = await self._get_data(f"/{tokens.uuid}/locations/rvms/{rvm_id}/bin-status", tokens)
         try:
             return [parse_compartment(record) for record in data]
         except (KeyError, TypeError, ValueError) as err:

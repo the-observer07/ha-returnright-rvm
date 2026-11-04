@@ -34,9 +34,7 @@ def make_machine(rvm_id: int, lat: float = 1.30, lng: float = 103.80) -> Machine
 
 def make_compartment(fill_pct: int = 40) -> Compartment:
     """Build a Compartment for tests."""
-    return Compartment(
-        type="CAN", fill_pct=fill_pct, last_updated=datetime(2026, 1, 1, tzinfo=UTC)
-    )
+    return Compartment(type="CAN", fill_pct=fill_pct, last_updated=datetime(2026, 1, 1, tzinfo=UTC))
 
 
 class FakeClient:

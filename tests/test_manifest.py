@@ -5,9 +5,7 @@ ROOT = Path(__file__).parent.parent
 
 
 def test_manifest_matches_spec():
-    manifest = json.loads(
-        (ROOT / "custom_components/returnright_rvm/manifest.json").read_text()
-    )
+    manifest = json.loads((ROOT / "custom_components/returnright_rvm/manifest.json").read_text())
     assert manifest["domain"] == "returnright_rvm"
     assert manifest["iot_class"] == "cloud_polling"
     assert manifest["integration_type"] == "service"

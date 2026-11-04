@@ -29,9 +29,7 @@ def _recorded_error(name: str) -> "StubResponse":
     """Parse a recorded 'status=/content-type=/blank/body' fixture."""
     head, _, body = _fixture(name).partition("\n\n")
     meta = dict(line.split("=", 1) for line in head.splitlines())
-    return StubResponse(
-        int(meta["status"]), body, {"Content-Type": meta["content-type"]}
-    )
+    return StubResponse(int(meta["status"]), body, {"Content-Type": meta["content-type"]})
 
 
 class StubResponse:

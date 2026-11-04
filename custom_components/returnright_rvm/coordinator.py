@@ -43,9 +43,7 @@ class RvmCoordinator(DataUpdateCoordinator[dict[int, MachineData]]):
 
     config_entry: RvmConfigEntry
 
-    def __init__(
-        self, hass: HomeAssistant, entry: RvmConfigEntry, client: RvmClient
-    ) -> None:
+    def __init__(self, hass: HomeAssistant, entry: RvmConfigEntry, client: RvmClient) -> None:
         """Initialise the coordinator."""
         minutes = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL_MIN)
         super().__init__(
@@ -90,9 +88,7 @@ class RvmCoordinator(DataUpdateCoordinator[dict[int, MachineData]]):
 
         result: dict[int, MachineData] = {}
         for (lat, lng, radius), ids in groups.items():
-            found = {
-                m.id: m for m in await self.client.nearby(tokens, lat, lng, radius)
-            }
+            found = {m.id: m for m in await self.client.nearby(tokens, lat, lng, radius)}
             for rvm_id in ids:
                 machine = found.get(rvm_id)
                 if machine is None:

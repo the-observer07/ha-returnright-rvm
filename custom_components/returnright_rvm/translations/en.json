@@ -15,5 +15,83 @@
       "title": "Return Right is blocking requests",
       "description": "The Return Right service has rejected several consecutive update attempts. Machine status will stay unavailable until requests are accepted again. This issue clears itself after the next successful update."
     }
+  },
+  "config": {
+    "step": {
+      "user": {
+        "title": "Find machines",
+        "description": "Enter a Singapore postcode to find machines within 1.5 km.",
+        "data": {
+          "postcode": "Postcode"
+        }
+      },
+      "pick_machines": {
+        "title": "Choose machines",
+        "description": "Select the machines to track.",
+        "data": {
+          "machines": "Machines"
+        }
+      }
+    },
+    "error": {
+      "postcode_not_found": "No address was found for that postcode.",
+      "no_machines": "No new machines were found within 1.5 km of that postcode.",
+      "cannot_connect": "Unable to reach the Return Right service.",
+      "upstream_blocked": "The Return Right service is blocking requests from this system.",
+      "no_selection": "Select at least one machine."
+    },
+    "abort": {
+      "single_instance_allowed": "Return Right RVM is already set up."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Return Right RVM options",
+        "menu_options": {
+          "interval": "Update interval",
+          "add_machines": "Add machines",
+          "remove_machines": "Remove machines"
+        }
+      },
+      "interval": {
+        "title": "Update interval",
+        "data": {
+          "scan_interval": "Minutes between updates"
+        },
+        "data_description": {
+          "scan_interval": "Between 5 and 60 minutes."
+        }
+      },
+      "add_machines": {
+        "title": "Find machines",
+        "description": "Enter a Singapore postcode to find machines within 1.5 km.",
+        "data": {
+          "postcode": "Postcode"
+        }
+      },
+      "pick_machines": {
+        "title": "Choose machines",
+        "description": "Select the machines to track.",
+        "data": {
+          "machines": "Machines"
+        }
+      },
+      "remove_machines": {
+        "title": "Remove machines",
+        "description": "Select the machines to stop tracking.",
+        "data": {
+          "machines": "Machines"
+        }
+      }
+    },
+    "error": {
+      "postcode_not_found": "No address was found for that postcode.",
+      "no_machines": "No new machines were found within 1.5 km of that postcode.",
+      "cannot_connect": "Unable to reach the Return Right service.",
+      "upstream_blocked": "The Return Right service is blocking requests from this system.",
+      "no_selection": "Select at least one machine.",
+      "cannot_remove_all": "At least one machine must remain."
+    }
   }
 }
