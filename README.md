@@ -43,6 +43,7 @@ If a machine is missing from an update, its entities become unavailable.
 Open the integration and choose **Configure**:
 
 - **Update interval**: minutes between updates, 1 to 60 (default 5). Short intervals make it more likely the service blocks requests.
+- **Debug logging**: logs every update at debug level (see Settings > System > Logs > Show raw logs).
 - **Add machines**: enter a postcode and pick more machines within 1.5 km (machines already tracked are not offered).
 - **Remove machines**: pick machines to stop tracking. At least one must remain.
 

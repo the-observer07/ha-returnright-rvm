@@ -13,6 +13,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.selector import (
+    BooleanSelector,
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
@@ -30,6 +31,7 @@ from .api import (
     make_session,
 )
 from .const import (
+    CONF_DEBUG,
     CONF_MACHINES,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL_MIN,
@@ -162,7 +164,10 @@ class RvmOptionsFlow(_SearchMixin, OptionsFlowWithReload):
         """Set the polling interval."""
         if user_input is not None:
             return self.async_create_entry(
-                data={CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL])}
+                data={
+                    CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL]),
+                    CONF_DEBUG: user_input[CONF_DEBUG],
+                }
             )
         current = self.config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL_MIN)
         schema = vol.Schema(
@@ -175,7 +180,10 @@ class RvmOptionsFlow(_SearchMixin, OptionsFlowWithReload):
                         mode=NumberSelectorMode.BOX,
                         unit_of_measurement="min",
                     )
-                )
+                ),
+                vol.Required(
+                    CONF_DEBUG, default=self.config_entry.options.get(CONF_DEBUG, False)
+                ): (BooleanSelector()),
             }
         )
         return self.async_show_form(step_id="interval", data_schema=schema)
