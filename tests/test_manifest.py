@@ -11,7 +11,7 @@ def test_manifest_matches_spec():
     assert manifest["integration_type"] == "service"
     assert manifest["config_flow"] is True
     assert manifest["single_config_entry"] is True
-    assert manifest["requirements"] == ["curl_cffi==0.17.0"]
+    assert manifest["requirements"] == ["curl_cffi==0.16.1"]
     assert manifest["version"] == "0.1.0"
     assert manifest["documentation"].startswith("https://github.com/")
     assert manifest["issue_tracker"].startswith("https://github.com/")
