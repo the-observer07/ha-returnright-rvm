@@ -8,6 +8,7 @@ ONEMAP_URL = (
     "?searchVal={postcode}&returnGeom=Y&getAddrDetails=Y&pageNum=1"
 )
 SEARCH_RADIUS_M = 1500
+POLL_RADIUS_M = 2000
 
 CONF_MACHINES = "machines"
 CONF_SCAN_INTERVAL = "scan_interval"

@@ -112,6 +112,13 @@ async def test_nearby_skips_malformed_record_and_keeps_the_rest(caplog):
     assert "malformed" in caplog.text
 
 
+@pytest.mark.parametrize("data", [None, {}])
+async def test_nearby_non_list_data_is_connection_error(data):
+    session = StubSession(StubResponse(text=json.dumps({"status": "fail", "data": data})))
+    with pytest.raises(RvmConnectionError):
+        await RvmClient(session).nearby(TOKENS, 1.0, 103.0, 1500)
+
+
 async def test_bin_status_returns_compartments():
     session = StubSession(_ok("bin_status_1157.json"))
     result = await RvmClient(session).bin_status(TOKENS, 1157)

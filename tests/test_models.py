@@ -44,6 +44,13 @@ def test_parse_machine_maps_upstream_keys() -> None:
     assert machine.opening_hours == "Mon - Sun:  24 Hrs"
 
 
+def test_parse_machine_strips_name_and_address() -> None:
+    padded = {**RECORD, "locationName": "SHENG SIONG BLK 221 ", "address": " 221 Mount Vernon Rd "}
+    machine = parse_machine(padded)
+    assert machine.name == "SHENG SIONG BLK 221"
+    assert machine.address == "221 Mount Vernon Rd"
+
+
 def test_parse_machine_null_remarks_and_hours_become_empty_strings() -> None:
     nulls = {**RECORD, "rvm_remarks": None, "rvmOpeningHours": None}
     machine = parse_machine(nulls)

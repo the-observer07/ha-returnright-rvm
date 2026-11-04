@@ -5,10 +5,11 @@ from __future__ import annotations
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import issue_registry as ir
 
 from .api import RvmClient, make_session
-from .const import CONF_MACHINES, DOMAIN
-from .coordinator import RvmConfigEntry, RvmCoordinator
+from .const import CONF_MACHINES, DOMAIN, ISSUE_UPSTREAM_BLOCKED
+from .coordinator import RvmConfigEntry, RvmCoordinator, reset_blocked
 
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
 
@@ -43,6 +44,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: RvmConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: RvmConfigEntry) -> bool:
     """Unload a config entry."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: RvmConfigEntry) -> None:
+    """Clear blocked-upstream state when the entry is removed."""
+    reset_blocked(entry.entry_id)
+    ir.async_delete_issue(hass, DOMAIN, ISSUE_UPSTREAM_BLOCKED)
 
 
 async def async_remove_config_entry_device(

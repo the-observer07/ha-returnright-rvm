@@ -36,6 +36,7 @@ from .const import (
     DOMAIN,
     MAX_SCAN_INTERVAL_MIN,
     MIN_SCAN_INTERVAL_MIN,
+    POLL_RADIUS_M,
     SEARCH_RADIUS_M,
 )
 from .models import Machine, normalise_status
@@ -95,7 +96,7 @@ class _SearchMixin:
                 "name": m.name,
                 "lat": lat,
                 "lng": lng,
-                "radius": SEARCH_RADIUS_M,
+                "radius": POLL_RADIUS_M,
             }
             for m in (self._found[int(i)] for i in ids)
         ]

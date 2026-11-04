@@ -16,6 +16,8 @@ from custom_components.returnright_rvm.const import (
     CONF_MACHINES,
     CONF_SCAN_INTERVAL,
     DOMAIN,
+    POLL_RADIUS_M,
+    SEARCH_RADIUS_M,
 )
 
 from .conftest import make_machine
@@ -31,6 +33,7 @@ class FlowClient:
         self.tokens_error: Exception | None = None
         self.machines = [make_machine(1), make_machine(2)]
         self.closed = 0
+        self.nearby_radii: list[int] = []
 
     async def geocode(self, postcode):
         if isinstance(self.geocode_result, Exception):
@@ -43,6 +46,7 @@ class FlowClient:
         return Tokens(uuid="u", token="t")
 
     async def nearby(self, tokens, lat, lng, radius_m):
+        self.nearby_radii.append(radius_m)
         return self.machines
 
     async def close(self):
@@ -76,7 +80,7 @@ def _spec(rvm_id):
         "name": f"RVM {rvm_id}",
         "lat": ORIGIN[0],
         "lng": ORIGIN[1],
-        "radius": 1500,
+        "radius": POLL_RADIUS_M,
     }
 
 
@@ -99,11 +103,20 @@ async def test_user_flow_creates_entry_with_selected_machines(hass, client):
         "name": "RVM 2",
         "lat": ORIGIN[0],
         "lng": ORIGIN[1],
-        "radius": 1500,
+        "radius": POLL_RADIUS_M,
     }
     assert isinstance(machine["lat"], float)
     assert result["options"] == {CONF_SCAN_INTERVAL: 10}
     assert client.closed >= 1
+
+
+async def test_flow_searches_with_search_radius_but_stores_poll_radius(hass, client):
+    result = await _start(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_MACHINES: ["2"]}
+    )
+    assert client.nearby_radii == [SEARCH_RADIUS_M] == [1500]
+    assert result["data"][CONF_MACHINES][0]["radius"] == POLL_RADIUS_M == 2000
 
 
 @pytest.mark.parametrize(

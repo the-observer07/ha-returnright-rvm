@@ -50,8 +50,8 @@ Open the integration and choose **Configure**:
 
 - Singapore BCRS machines only.
 - Home Assistant 2026.10 or newer.
-- The integration uses `curl_cffi`, which publishes no musl armv7l wheel, so 32-bit Alpine installs are not supported.
-- Updates are no more frequent than every 5 minutes.
+- 64-bit systems only (as is Home Assistant itself since 2025.12).
+- Updates run every 10 minutes by default; the interval cannot be set below 5 minutes.
 
 ## Troubleshooting
 

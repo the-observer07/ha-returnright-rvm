@@ -26,6 +26,25 @@ _LOGGER = logging.getLogger(__name__)
 
 type RvmConfigEntry = ConfigEntry[RvmCoordinator]
 
+# Consecutive blocked cycles per entry. Kept outside the coordinator because
+# setup retries and reloads recreate it.
+_BLOCKED_CYCLES: dict[str, int] = {}
+
+
+def blocked_cycles(entry_id: str) -> int:
+    """Return the consecutive blocked-cycle count for an entry."""
+    return _BLOCKED_CYCLES.get(entry_id, 0)
+
+
+def _record_blocked(entry_id: str) -> int:
+    _BLOCKED_CYCLES[entry_id] = blocked_cycles(entry_id) + 1
+    return _BLOCKED_CYCLES[entry_id]
+
+
+def reset_blocked(entry_id: str) -> None:
+    """Forget the blocked-cycle count for an entry."""
+    _BLOCKED_CYCLES.pop(entry_id, None)
+
 
 def _failure(err: RvmError) -> UpdateFailed:
     """Translate an upstream error into UpdateFailed."""
@@ -54,27 +73,26 @@ class RvmCoordinator(DataUpdateCoordinator[dict[int, MachineData]]):
             update_interval=timedelta(minutes=minutes),
         )
         self.client = client
-        self._blocked_cycles = 0
 
     async def _async_update_data(self) -> dict[int, MachineData]:
         """Fetch status for every configured machine."""
         try:
             data = await self._fetch()
         except RvmBlockedError as err:
-            self._blocked_cycles += 1
-            if self._blocked_cycles >= BLOCKED_CYCLES_BEFORE_REPAIR:
+            if _record_blocked(self.config_entry.entry_id) >= BLOCKED_CYCLES_BEFORE_REPAIR:
                 ir.async_create_issue(
                     self.hass,
                     DOMAIN,
                     ISSUE_UPSTREAM_BLOCKED,
                     is_fixable=False,
+                    is_persistent=True,
                     severity=ir.IssueSeverity.WARNING,
                     translation_key="upstream_blocked",
                 )
             raise _failure(err) from err
         except RvmError as err:
             raise _failure(err) from err
-        self._blocked_cycles = 0
+        reset_blocked(self.config_entry.entry_id)
         ir.async_delete_issue(self.hass, DOMAIN, ISSUE_UPSTREAM_BLOCKED)
         return data
 

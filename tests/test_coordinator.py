@@ -16,7 +16,7 @@ from custom_components.returnright_rvm.const import (
     DOMAIN,
     ISSUE_UPSTREAM_BLOCKED,
 )
-from custom_components.returnright_rvm.coordinator import RvmCoordinator
+from custom_components.returnright_rvm.coordinator import RvmCoordinator, blocked_cycles
 
 from .conftest import make_compartment, make_machine
 
@@ -30,7 +30,7 @@ def _spec(rvm_id, origin):
         "name": f"RVM {rvm_id}",
         "lat": origin[0],
         "lng": origin[1],
-        "radius": 1500,
+        "radius": 2000,
     }
 
 
@@ -61,13 +61,13 @@ async def test_tokens_fetched_once_per_cycle_for_many_machines(hass, fake_client
 async def test_machines_sharing_an_origin_share_one_nearby_call(hass, fake_client, make_entry):
     coord = _setup(hass, fake_client, make_entry, [(1, A), (2, A)])
     await coord._async_update_data()
-    assert fake_client.nearby_calls == [(*A, 1500)]
+    assert fake_client.nearby_calls == [(*A, 2000)]
 
 
 async def test_distinct_origins_each_get_a_nearby_call(hass, fake_client, make_entry):
     coord = _setup(hass, fake_client, make_entry, [(1, A), (2, B)])
     await coord._async_update_data()
-    assert sorted(fake_client.nearby_calls) == [(*A, 1500), (*B, 1500)]
+    assert sorted(fake_client.nearby_calls) == [(*A, 2000), (*B, 2000)]
 
 
 async def test_one_bin_status_failure_drops_only_that_machine(hass, fake_client, make_entry):
@@ -144,6 +144,45 @@ async def test_success_after_blocked_deletes_issue_and_resets_counter(
     for _ in range(2):
         with pytest.raises(UpdateFailed):
             await coord._async_update_data()
+    assert _issue(hass) is None
+
+
+async def test_blocked_count_survives_coordinator_recreation(hass, fake_client, make_entry):
+    coord = _setup(hass, fake_client, make_entry, [(1, A)])
+    fake_client.tokens_result = RvmBlockedError("blocked")
+    for _ in range(2):
+        with pytest.raises(UpdateFailed):
+            await coord._async_update_data()
+    assert blocked_cycles(coord.config_entry.entry_id) == 2
+
+    fresh = RvmCoordinator(hass, coord.config_entry, fake_client)
+    with pytest.raises(UpdateFailed):
+        await fresh._async_update_data()
+    assert _issue(hass) is not None
+    assert _issue(hass).is_persistent is True
+
+
+async def test_non_blocked_failure_leaves_count_unchanged(hass, fake_client, make_entry):
+    coord = _setup(hass, fake_client, make_entry, [(1, A)])
+    fake_client.tokens_result = RvmBlockedError("blocked")
+    with pytest.raises(UpdateFailed):
+        await coord._async_update_data()
+    fake_client.tokens_result = RvmConnectionError("down")
+    with pytest.raises(UpdateFailed):
+        await coord._async_update_data()
+    assert blocked_cycles(coord.config_entry.entry_id) == 1
+
+
+async def test_success_resets_blocked_count(hass, fake_client, make_entry):
+    coord = _setup(hass, fake_client, make_entry, [(1, A)])
+    ok_tokens = fake_client.tokens_result
+    fake_client.tokens_result = RvmBlockedError("blocked")
+    for _ in range(3):
+        with pytest.raises(UpdateFailed):
+            await coord._async_update_data()
+    fake_client.tokens_result = ok_tokens
+    await coord._async_update_data()
+    assert blocked_cycles(coord.config_entry.entry_id) == 0
     assert _issue(hass) is None
 
 

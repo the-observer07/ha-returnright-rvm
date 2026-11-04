@@ -111,6 +111,8 @@ class RvmClient:
             f"/{tokens.uuid}/locations/nearby?lat={lat}&lng={lng}&radius={radius_m}",
             tokens,
         )
+        if not isinstance(data, list):
+            raise RvmConnectionError("unexpected response")
         machines = []
         for record in data:
             try:

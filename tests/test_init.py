@@ -6,14 +6,16 @@ import pytest
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import issue_registry as ir
 
 from custom_components.returnright_rvm import async_remove_config_entry_device
-from custom_components.returnright_rvm.api import RvmConnectionError
-from custom_components.returnright_rvm.const import DOMAIN
+from custom_components.returnright_rvm.api import RvmBlockedError, RvmConnectionError
+from custom_components.returnright_rvm.const import DOMAIN, ISSUE_UPSTREAM_BLOCKED
+from custom_components.returnright_rvm.coordinator import blocked_cycles
 
 from .conftest import make_compartment, make_machine
 
-MACHINE = {"id": 1203, "name": "RVM 1203", "lat": 1.30, "lng": 103.80, "radius": 1500}
+MACHINE = {"id": 1203, "name": "RVM 1203", "lat": 1.30, "lng": 103.80, "radius": 2000}
 
 
 @pytest.fixture
@@ -87,3 +89,38 @@ async def test_remove_config_entry_device_only_for_deselected_machines(
 
     assert not await async_remove_config_entry_device(hass, entry, kept)
     assert await async_remove_config_entry_device(hass, entry, gone)
+
+
+async def test_three_blocked_setup_retries_create_repair_issue(
+    hass: HomeAssistant, make_entry, patched_client
+) -> None:
+    patched_client.tokens_result = RvmBlockedError("blocked")
+    entry = make_entry([MACHINE])
+    entry.add_to_hass(hass)
+    registry = ir.async_get(hass)
+
+    assert not await hass.config_entries.async_setup(entry.entry_id)
+    assert entry.state is ConfigEntryState.SETUP_RETRY
+    for _ in range(2):
+        assert registry.async_get_issue(DOMAIN, ISSUE_UPSTREAM_BLOCKED) is None
+        await hass.config_entries.async_reload(entry.entry_id)
+        assert entry.state is ConfigEntryState.SETUP_RETRY
+    assert registry.async_get_issue(DOMAIN, ISSUE_UPSTREAM_BLOCKED) is not None
+
+
+async def test_removing_entry_deletes_issue_and_clears_count(
+    hass: HomeAssistant, make_entry, patched_client
+) -> None:
+    patched_client.tokens_result = RvmBlockedError("blocked")
+    entry = make_entry([MACHINE])
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    for _ in range(2):
+        await hass.config_entries.async_reload(entry.entry_id)
+    registry = ir.async_get(hass)
+    assert registry.async_get_issue(DOMAIN, ISSUE_UPSTREAM_BLOCKED) is not None
+
+    await hass.config_entries.async_remove(entry.entry_id)
+    await hass.async_block_till_done()
+    assert registry.async_get_issue(DOMAIN, ISSUE_UPSTREAM_BLOCKED) is None
+    assert blocked_cycles(entry.entry_id) == 0

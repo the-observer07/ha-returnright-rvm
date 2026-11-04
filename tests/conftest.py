@@ -93,7 +93,7 @@ def make_entry():
     return _make
 
 
-MACHINE = {"id": 1203, "name": "RVM 1203", "lat": 1.30, "lng": 103.80, "radius": 1500}
+MACHINE = {"id": 1203, "name": "RVM 1203", "lat": 1.30, "lng": 103.80, "radius": 2000}
 
 
 @pytest.fixture

@@ -49,8 +49,8 @@ def parse_machine(record: dict[str, Any]) -> Machine:
     """Build a Machine from an upstream nearby record."""
     return Machine(
         id=record["id"],
-        name=record["locationName"],
-        address=record["address"],
+        name=record["locationName"].strip(),
+        address=record["address"].strip(),
         postal_code=record["postalCode"],
         lat=float(record["latitude"]),
         lng=float(record["longitude"]),
