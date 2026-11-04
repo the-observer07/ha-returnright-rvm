@@ -1,1 +1,19 @@
-{}
+{
+  "exceptions": {
+    "cannot_connect": {
+      "message": "Unable to reach the Return Right service."
+    },
+    "upstream_blocked": {
+      "message": "The Return Right service is blocking requests from this system."
+    },
+    "auth_failed": {
+      "message": "The Return Right service rejected the request."
+    }
+  },
+  "issues": {
+    "upstream_blocked": {
+      "title": "Return Right is blocking requests",
+      "description": "The Return Right service has rejected several consecutive update attempts. Machine status will stay unavailable until requests are accepted again. This issue clears itself after the next successful update."
+    }
+  }
+}
