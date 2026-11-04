@@ -113,6 +113,11 @@
       "compartment_fill": {
         "name": "{compartment} fill"
       }
+    },
+    "binary_sensor": {
+      "bin_full": {
+        "name": "Bin full"
+      }
     }
   }
 }

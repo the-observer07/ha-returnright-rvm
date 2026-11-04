@@ -2,7 +2,6 @@
 
 from dataclasses import replace
 from datetime import UTC, datetime
-from unittest.mock import patch
 
 import pytest
 from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
@@ -11,34 +10,7 @@ from homeassistant.helpers import entity_registry as er
 
 from custom_components.returnright_rvm.models import Compartment
 
-from .conftest import make_compartment, make_machine
-
-MACHINE = {"id": 1203, "name": "RVM 1203", "lat": 1.30, "lng": 103.80, "radius": 1500}
-
-
-@pytest.fixture
-def patched_client(fake_client):
-    """Patch client creation so setup uses the fake client."""
-    fake_client.nearby_results[(1.30, 103.80)] = [make_machine(1203)]
-    fake_client.bin_results[1203] = [make_compartment()]
-    with (
-        patch("custom_components.returnright_rvm.make_session"),
-        patch("custom_components.returnright_rvm.RvmClient", return_value=fake_client),
-    ):
-        yield fake_client
-
-
-async def _setup(hass: HomeAssistant, make_entry):
-    entry = make_entry([MACHINE])
-    entry.add_to_hass(hass)
-    assert await hass.config_entries.async_setup(entry.entry_id)
-    await hass.async_block_till_done()
-    return entry
-
-
-async def _refresh(hass: HomeAssistant, entry) -> None:
-    await entry.runtime_data.async_refresh()
-    await hass.async_block_till_done()
+from .conftest import _refresh, _setup, make_compartment, make_machine
 
 
 async def test_status_sensor_state_and_attributes(
