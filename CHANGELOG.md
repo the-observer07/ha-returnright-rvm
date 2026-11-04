@@ -13,4 +13,4 @@ First release.
   - Bin full (binary sensor).
   - Bin last updated (diagnostic timestamp sensor, disabled by default).
 - Repairs issue "Return Right is blocking requests" after three consecutive update cycles rejected by the service; it clears after the next successful update.
-- When the service blocks a request, polling backs off (interval doubles per blocked cycle, up to 60 minutes) and returns to normal after the next success.
+- When the service blocks a request, polling backs off (interval doubles per blocked cycle, up to 15 minutes) and returns to normal after the next success.

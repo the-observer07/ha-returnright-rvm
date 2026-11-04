@@ -52,7 +52,7 @@ Open the integration and choose **Configure**:
 - Home Assistant 2026.10 or newer.
 - 64-bit systems only (as is Home Assistant itself since 2025.12).
 - Updates run every 10 minutes by default; the interval cannot be set below 5 minutes.
-- If the service blocks requests, polling backs off automatically (doubling up to 60 minutes) until it succeeds again.
+- If the service blocks requests, polling backs off automatically (doubling up to 15 minutes) until it succeeds again.
 
 ## Troubleshooting
 
