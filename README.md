@@ -31,7 +31,7 @@ Each machine becomes a device named after the machine.
 | Entity | Type | Notes |
 |---|---|---|
 | Status | Enum sensor | `running`, `full` or `offline`. Attributes: `raw_status`, `address`, `remarks`, `opening_hours`. `RUNNING`, `OPERATE` and `ONLINE` map to running, `FULL` to full, anything else to offline. |
-| Busiest fill | Sensor (%) | Highest fill level across the machine's compartments. |
+| Fill level | Sensor (%) | Highest fill level across the machine's compartments. |
 | `<Compartment>` fill | Sensor (%) | One per compartment type, with a `last_updated` attribute. Compartments that appear later are added without a reload. |
 | Bin full | Binary sensor | On when the status is full or any compartment is at 100% or more. |
 | Bin last updated | Timestamp sensor | Diagnostic; disabled by default. Newest compartment update time. |

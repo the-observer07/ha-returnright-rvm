@@ -105,7 +105,7 @@
         }
       },
       "busiest_fill": {
-        "name": "Busiest fill"
+        "name": "Fill level"
       },
       "bin_last_updated": {
         "name": "Bin last updated"

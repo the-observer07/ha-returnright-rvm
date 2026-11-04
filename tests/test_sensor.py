@@ -48,7 +48,7 @@ async def test_busiest_fill_is_max_compartment(
     ]
     await _setup(hass, make_entry)
 
-    state = hass.states.get("sensor.rvm_1203_busiest_fill")
+    state = hass.states.get("sensor.rvm_1203_fill_level")
     assert state.state == "85"
     assert state.attributes["unit_of_measurement"] == "%"
 
@@ -59,7 +59,7 @@ async def test_zero_compartments_gives_unknown_busiest_and_no_compartment_entiti
     patched_client.bin_results[1203] = []
     entry = await _setup(hass, make_entry)
 
-    assert hass.states.get("sensor.rvm_1203_busiest_fill").state == STATE_UNKNOWN
+    assert hass.states.get("sensor.rvm_1203_fill_level").state == STATE_UNKNOWN
     registry = er.async_get(hass)
     unique_ids = {e.unique_id for e in er.async_entries_for_config_entry(registry, entry.entry_id)}
     assert not any("_fill_" in uid for uid in unique_ids)
@@ -108,12 +108,12 @@ async def test_entities_unavailable_when_machine_dropped_from_data(
     patched_client.nearby_results[(1.30, 103.80)] = []
     await _refresh(hass, entry)
     assert hass.states.get("sensor.rvm_1203_status").state == STATE_UNAVAILABLE
-    assert hass.states.get("sensor.rvm_1203_busiest_fill").state == STATE_UNAVAILABLE
+    assert hass.states.get("sensor.rvm_1203_fill_level").state == STATE_UNAVAILABLE
 
     patched_client.nearby_results[(1.30, 103.80)] = [make_machine(1203)]
     await _refresh(hass, entry)
     assert hass.states.get("sensor.rvm_1203_status").state == "running"
-    assert hass.states.get("sensor.rvm_1203_busiest_fill").state == "40"
+    assert hass.states.get("sensor.rvm_1203_fill_level").state == "40"
 
 
 async def test_compartment_returning_after_absence_is_available_again(

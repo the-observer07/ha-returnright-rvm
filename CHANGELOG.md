@@ -8,7 +8,7 @@ First release.
 - Options flow: change the update interval (5 to 60 minutes, default 10), add machines by postcode, remove machines (at least one must remain).
 - One device per machine with these entities:
   - Status (enum sensor: running, full, offline) with raw status, address, remarks and opening hours as attributes.
-  - Busiest fill (sensor, %).
+  - Fill level (sensor, %, highest across compartments).
   - One fill sensor per compartment type (%), with a `last_updated` attribute; compartments that appear later are added without a reload.
   - Bin full (binary sensor).
   - Bin last updated (diagnostic timestamp sensor, disabled by default).
