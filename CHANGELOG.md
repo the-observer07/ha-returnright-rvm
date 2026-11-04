@@ -5,7 +5,7 @@
 First release.
 
 - Config flow: enter a Singapore postcode, then pick reverse vending machines within 1.5 km. Only one instance can be set up.
-- Options flow: change the update interval (5 to 60 minutes, default 10), add machines by postcode, remove machines (at least one must remain).
+- Options flow: change the update interval (1 to 60 minutes, default 10), add machines by postcode, remove machines (at least one must remain).
 - One device per machine with these entities:
   - Status (enum sensor: running, full, offline) with raw status, address, remarks and opening hours as attributes.
   - Busiest fill (sensor, %).

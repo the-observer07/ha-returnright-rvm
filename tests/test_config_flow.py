@@ -184,12 +184,22 @@ async def test_options_interval_is_saved(hass, client, make_entry):
     assert entry.options[CONF_SCAN_INTERVAL] == 30
 
 
-async def test_options_rejects_interval_below_5(hass, client, make_entry):
+async def test_options_accepts_one_minute_interval(hass, client, make_entry):
+    entry, result = await _options(hass, make_entry)
+    result = await _menu(hass, result, "interval")
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_SCAN_INTERVAL: 1}
+    )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert entry.options[CONF_SCAN_INTERVAL] == 1
+
+
+async def test_options_rejects_interval_below_1(hass, client, make_entry):
     _, result = await _options(hass, make_entry)
     result = await _menu(hass, result, "interval")
     with pytest.raises(InvalidData):
         await hass.config_entries.options.async_configure(
-            result["flow_id"], {CONF_SCAN_INTERVAL: 4}
+            result["flow_id"], {CONF_SCAN_INTERVAL: 0}
         )
 
 

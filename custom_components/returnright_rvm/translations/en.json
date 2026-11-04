@@ -60,7 +60,7 @@
           "scan_interval": "Minutes between updates"
         },
         "data_description": {
-          "scan_interval": "Between 5 and 60 minutes."
+          "scan_interval": "Between 1 and 60 minutes. Shorter intervals make the service more likely to block requests."
         }
       },
       "add_machines": {
