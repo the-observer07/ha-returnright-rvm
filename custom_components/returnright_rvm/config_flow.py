@@ -238,4 +238,6 @@ class RvmOptionsFlow(_SearchMixin, OptionsFlowWithReload):
         self.hass.config_entries.async_update_entry(
             self.config_entry, data={CONF_MACHINES: machines}
         )
+        # Options stay unchanged, so OptionsFlowWithReload would not reload.
+        self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
         return self.async_create_entry(data=dict(self.config_entry.options))

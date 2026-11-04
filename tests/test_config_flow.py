@@ -52,12 +52,13 @@ class FlowClient:
 @pytest.fixture
 def client():
     fake = FlowClient()
+    fake.setup = AsyncMock(return_value=True)
     with (
         patch("custom_components.returnright_rvm.config_flow.RvmClient", lambda s: fake),
         patch("custom_components.returnright_rvm.config_flow.make_session"),
         patch(
             "custom_components.returnright_rvm.async_setup_entry",
-            AsyncMock(return_value=True),
+            fake.setup,
             create=True,
         ),
         patch(
@@ -226,3 +227,33 @@ async def test_options_remove_all_is_refused(hass, client, make_entry):
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] == {"base": "cannot_remove_all"}
     assert len(entry.data[CONF_MACHINES]) == 2
+
+
+async def _reloads(hass, client, make_entry, option, step_input, specs=(1,)):
+    """Run an options step and return how many extra setups it caused."""
+    client.machines = [make_machine(1), make_machine(2)]
+    _, result = await _options(hass, make_entry, specs=specs)
+    before = client.setup.call_count
+    result = await _menu(hass, result, option)
+    if option == "add_machines":
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"], {"postcode": "123456"}
+        )
+    await hass.config_entries.options.async_configure(result["flow_id"], step_input)
+    await hass.async_block_till_done()
+    return client.setup.call_count - before
+
+
+async def test_options_add_machines_reloads_entry(hass, client, make_entry):
+    assert await _reloads(hass, client, make_entry, "add_machines", {CONF_MACHINES: ["2"]}) == 1
+
+
+async def test_options_remove_machines_reloads_entry(hass, client, make_entry):
+    assert (
+        await _reloads(hass, client, make_entry, "remove_machines", {CONF_MACHINES: ["1"]}, (1, 2))
+        == 1
+    )
+
+
+async def test_options_interval_reloads_entry_once(hass, client, make_entry):
+    assert await _reloads(hass, client, make_entry, "interval", {CONF_SCAN_INTERVAL: 30}) == 1
