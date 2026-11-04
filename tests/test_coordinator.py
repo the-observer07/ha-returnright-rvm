@@ -191,6 +191,47 @@ async def test_scan_interval_comes_from_options(hass, fake_client, make_entry):
     assert coord.update_interval == timedelta(minutes=15)
 
 
-async def test_scan_interval_defaults_to_ten_minutes(hass, fake_client, make_entry):
+async def test_scan_interval_defaults_to_five_minutes(hass, fake_client, make_entry):
     coord = _setup(hass, fake_client, make_entry, [(1, A)])
+    assert coord.update_interval == timedelta(minutes=5)
+
+
+async def test_blocked_backs_off_doubling_up_to_cap(hass, fake_client, make_entry):
+    coord = _setup(hass, fake_client, make_entry, [(1, A)], {CONF_SCAN_INTERVAL: 1})
+    fake_client.tokens_result = RvmBlockedError("blocked")
+    seen = []
+    for _ in range(6):
+        with pytest.raises(UpdateFailed):
+            await coord._async_update_data()
+        seen.append(coord.update_interval)
+    assert seen == [timedelta(minutes=m) for m in (2, 4, 8, 15, 15, 15)]
+
+
+async def test_backoff_never_goes_below_configured_interval(hass, fake_client, make_entry):
+    coord = _setup(hass, fake_client, make_entry, [(1, A)], {CONF_SCAN_INTERVAL: 30})
+    fake_client.tokens_result = RvmBlockedError("blocked")
+    with pytest.raises(UpdateFailed):
+        await coord._async_update_data()
+    assert coord.update_interval == timedelta(minutes=30)
+
+
+async def test_success_restores_configured_interval(hass, fake_client, make_entry):
+    coord = _setup(hass, fake_client, make_entry, [(1, A)])
+    ok_tokens = fake_client.tokens_result
+    fake_client.tokens_result = RvmBlockedError("blocked")
+    with pytest.raises(UpdateFailed):
+        await coord._async_update_data()
     assert coord.update_interval == timedelta(minutes=10)
+    fake_client.tokens_result = ok_tokens
+    await coord._async_update_data()
+    assert coord.update_interval == timedelta(minutes=5)
+
+
+async def test_recreated_coordinator_starts_backed_off(hass, fake_client, make_entry):
+    coord = _setup(hass, fake_client, make_entry, [(1, A)])
+    fake_client.tokens_result = RvmBlockedError("blocked")
+    for _ in range(2):
+        with pytest.raises(UpdateFailed):
+            await coord._async_update_data()
+    fresh = RvmCoordinator(hass, coord.config_entry, fake_client)
+    assert fresh.update_interval == timedelta(minutes=15)

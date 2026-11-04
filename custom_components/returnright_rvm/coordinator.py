@@ -13,6 +13,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .api import RvmAuthError, RvmBlockedError, RvmClient, RvmError
 from .const import (
+    BACKOFF_MAX_MIN,
     BLOCKED_CYCLES_BEFORE_REPAIR,
     CONF_MACHINES,
     CONF_SCAN_INTERVAL,
@@ -64,22 +65,31 @@ class RvmCoordinator(DataUpdateCoordinator[dict[int, MachineData]]):
 
     def __init__(self, hass: HomeAssistant, entry: RvmConfigEntry, client: RvmClient) -> None:
         """Initialise the coordinator."""
-        minutes = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL_MIN)
+        self._base = timedelta(
+            minutes=entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL_MIN)
+        )
         super().__init__(
             hass,
             _LOGGER,
             config_entry=entry,
             name=DOMAIN,
-            update_interval=timedelta(minutes=minutes),
+            update_interval=self._backed_off(blocked_cycles(entry.entry_id)),
         )
         self.client = client
+
+    def _backed_off(self, blocked: int) -> timedelta:
+        """Double the interval per blocked cycle, capped, never below the base."""
+        cap = max(self._base, timedelta(minutes=BACKOFF_MAX_MIN))
+        return min(self._base * 2 ** min(blocked, 10), cap)
 
     async def _async_update_data(self) -> dict[int, MachineData]:
         """Fetch status for every configured machine."""
         try:
             data = await self._fetch()
         except RvmBlockedError as err:
-            if _record_blocked(self.config_entry.entry_id) >= BLOCKED_CYCLES_BEFORE_REPAIR:
+            blocked = _record_blocked(self.config_entry.entry_id)
+            self.update_interval = self._backed_off(blocked)
+            if blocked >= BLOCKED_CYCLES_BEFORE_REPAIR:
                 ir.async_create_issue(
                     self.hass,
                     DOMAIN,
@@ -93,6 +103,7 @@ class RvmCoordinator(DataUpdateCoordinator[dict[int, MachineData]]):
         except RvmError as err:
             raise _failure(err) from err
         reset_blocked(self.config_entry.entry_id)
+        self.update_interval = self._base
         ir.async_delete_issue(self.hass, DOMAIN, ISSUE_UPSTREAM_BLOCKED)
         return data
 
