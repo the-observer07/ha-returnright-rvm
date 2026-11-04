@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from collections import defaultdict
 from datetime import timedelta
 
@@ -84,11 +85,13 @@ class RvmCoordinator(DataUpdateCoordinator[dict[int, MachineData]]):
 
     async def _async_update_data(self) -> dict[int, MachineData]:
         """Fetch status for every configured machine."""
+        started = time.monotonic()
         try:
             data = await self._fetch()
         except RvmBlockedError as err:
             blocked = _record_blocked(self.config_entry.entry_id)
             self.update_interval = self._backed_off(blocked)
+            _LOGGER.debug("Poll blocked (%d in a row); next in %s", blocked, self.update_interval)
             if blocked >= BLOCKED_CYCLES_BEFORE_REPAIR:
                 ir.async_create_issue(
                     self.hass,
@@ -101,9 +104,17 @@ class RvmCoordinator(DataUpdateCoordinator[dict[int, MachineData]]):
                 )
             raise _failure(err) from err
         except RvmError as err:
+            _LOGGER.debug("Poll failed: %s", err)
             raise _failure(err) from err
         reset_blocked(self.config_entry.entry_id)
         self.update_interval = self._base
+        _LOGGER.debug(
+            "Poll ok: %d of %d machines in %.1fs; next in %s",
+            len(data),
+            len(self.config_entry.data[CONF_MACHINES]),
+            time.monotonic() - started,
+            self.update_interval,
+        )
         ir.async_delete_issue(self.hass, DOMAIN, ISSUE_UPSTREAM_BLOCKED)
         return data
 

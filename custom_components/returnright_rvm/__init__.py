@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import logging
+
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import issue_registry as ir
 
 from .api import RvmClient, make_session
-from .const import CONF_MACHINES, DOMAIN, ISSUE_UPSTREAM_BLOCKED
+from .const import CONF_DEBUG, CONF_MACHINES, DOMAIN, ISSUE_UPSTREAM_BLOCKED
 from .coordinator import RvmConfigEntry, RvmCoordinator, reset_blocked
 
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
@@ -24,6 +26,9 @@ def _device_machine_ids(device: dr.DeviceEntry) -> set[str]:
 
 async def async_setup_entry(hass: HomeAssistant, entry: RvmConfigEntry) -> bool:
     """Set up Return Right RVM from a config entry."""
+    logging.getLogger(__package__).setLevel(
+        logging.DEBUG if entry.options.get(CONF_DEBUG) else logging.NOTSET
+    )
     client = RvmClient(make_session())
     entry.async_on_unload(client.close)
 

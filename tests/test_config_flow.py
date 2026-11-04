@@ -280,3 +280,19 @@ async def test_options_remove_machines_reloads_entry(hass, client, make_entry):
 
 async def test_options_interval_reloads_entry_once(hass, client, make_entry):
     assert await _reloads(hass, client, make_entry, "interval", {CONF_SCAN_INTERVAL: 30}) == 1
+
+
+async def test_options_debug_toggle_is_saved_and_defaults_off(hass, client, make_entry):
+    entry, result = await _options(hass, make_entry)
+    result = await _menu(hass, result, "interval")
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_SCAN_INTERVAL: 5}
+    )
+    assert entry.options["debug"] is False
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await _menu(hass, result, "interval")
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_SCAN_INTERVAL: 5, "debug": True}
+    )
+    assert entry.options == {CONF_SCAN_INTERVAL: 5, "debug": True}

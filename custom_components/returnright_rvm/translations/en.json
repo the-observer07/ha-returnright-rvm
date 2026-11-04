@@ -57,10 +57,12 @@
       "interval": {
         "title": "Update interval",
         "data": {
-          "scan_interval": "Minutes between updates"
+          "scan_interval": "Minutes between updates",
+          "debug": "Debug logging"
         },
         "data_description": {
-          "scan_interval": "Between 1 and 60 minutes. Shorter intervals make the service more likely to block requests."
+          "scan_interval": "Between 1 and 60 minutes. Shorter intervals make the service more likely to block requests.",
+          "debug": "Log every update (result, duration, next update time) at debug level. View it under Settings > System > Logs > Show raw logs."
         }
       },
       "add_machines": {
