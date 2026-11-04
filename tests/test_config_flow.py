@@ -106,7 +106,7 @@ async def test_user_flow_creates_entry_with_selected_machines(hass, client):
         "radius": POLL_RADIUS_M,
     }
     assert isinstance(machine["lat"], float)
-    assert result["options"] == {CONF_SCAN_INTERVAL: 10}
+    assert result["options"] == {CONF_SCAN_INTERVAL: 5}
     assert client.closed >= 1
 
 

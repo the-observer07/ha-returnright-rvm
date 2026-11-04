@@ -6,7 +6,7 @@ Shows the status of Singapore BCRS (Beverage Container Return Scheme) reverse ve
 
 ## Disclaimer
 
-This is an unofficial integration. It is not affiliated with, endorsed by or supported by the operator of Return Right. It relies on an undocumented API that may change or stop working at any time. It polls gently on purpose (every 10 minutes by default, configurable down to every minute, at your own risk of being blocked).
+This is an unofficial integration. It is not affiliated with, endorsed by or supported by the operator of Return Right. It relies on an undocumented API that may change or stop working at any time. It polls gently on purpose (every 5 minutes by default, configurable down to every minute, at your own risk of being blocked).
 
 ## Installation (HACS custom repository)
 
@@ -42,7 +42,7 @@ If a machine is missing from an update, its entities become unavailable.
 
 Open the integration and choose **Configure**:
 
-- **Update interval**: minutes between updates, 1 to 60 (default 10). Short intervals make it more likely the service blocks requests..
+- **Update interval**: minutes between updates, 1 to 60 (default 5). Short intervals make it more likely the service blocks requests.
 - **Add machines**: enter a postcode and pick more machines within 1.5 km (machines already tracked are not offered).
 - **Remove machines**: pick machines to stop tracking. At least one must remain.
 
@@ -51,7 +51,7 @@ Open the integration and choose **Configure**:
 - Singapore BCRS machines only.
 - Home Assistant 2026.10 or newer.
 - 64-bit systems only (as is Home Assistant itself since 2025.12).
-- Updates run every 10 minutes by default; the interval can be set from 1 to 60 minutes.
+- Updates run every 5 minutes by default; the interval can be set from 1 to 60 minutes.
 - If the service blocks requests, polling backs off automatically (doubling up to 15 minutes) until it succeeds again.
 
 ## Troubleshooting

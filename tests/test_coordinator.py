@@ -191,9 +191,9 @@ async def test_scan_interval_comes_from_options(hass, fake_client, make_entry):
     assert coord.update_interval == timedelta(minutes=15)
 
 
-async def test_scan_interval_defaults_to_ten_minutes(hass, fake_client, make_entry):
+async def test_scan_interval_defaults_to_five_minutes(hass, fake_client, make_entry):
     coord = _setup(hass, fake_client, make_entry, [(1, A)])
-    assert coord.update_interval == timedelta(minutes=10)
+    assert coord.update_interval == timedelta(minutes=5)
 
 
 async def test_blocked_backs_off_doubling_up_to_cap(hass, fake_client, make_entry):
@@ -221,10 +221,10 @@ async def test_success_restores_configured_interval(hass, fake_client, make_entr
     fake_client.tokens_result = RvmBlockedError("blocked")
     with pytest.raises(UpdateFailed):
         await coord._async_update_data()
-    assert coord.update_interval == timedelta(minutes=15)
+    assert coord.update_interval == timedelta(minutes=10)
     fake_client.tokens_result = ok_tokens
     await coord._async_update_data()
-    assert coord.update_interval == timedelta(minutes=10)
+    assert coord.update_interval == timedelta(minutes=5)
 
 
 async def test_recreated_coordinator_starts_backed_off(hass, fake_client, make_entry):
