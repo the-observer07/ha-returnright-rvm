@@ -93,5 +93,26 @@
       "no_selection": "Select at least one machine.",
       "cannot_remove_all": "At least one machine must remain."
     }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status",
+        "state": {
+          "running": "Running",
+          "full": "Full",
+          "offline": "Offline"
+        }
+      },
+      "busiest_fill": {
+        "name": "Busiest fill"
+      },
+      "bin_last_updated": {
+        "name": "Bin last updated"
+      },
+      "compartment_fill": {
+        "name": "{compartment} fill"
+      }
+    }
   }
 }
