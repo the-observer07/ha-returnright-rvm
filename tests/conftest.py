@@ -47,6 +47,7 @@ class FakeClient:
         self.tokens_calls = 0
         self.nearby_calls: list[tuple[float, float, int]] = []
         self.bin_calls: list[int] = []
+        self.closed = 0
 
     @staticmethod
     def _resolve(value):
@@ -65,6 +66,9 @@ class FakeClient:
     async def bin_status(self, tokens, rvm_id):
         self.bin_calls.append(rvm_id)
         return self._resolve(self.bin_results[rvm_id])
+
+    async def close(self):
+        self.closed += 1
 
 
 @pytest.fixture
